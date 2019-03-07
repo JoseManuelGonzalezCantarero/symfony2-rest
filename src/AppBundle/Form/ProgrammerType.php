@@ -28,6 +28,7 @@ class ProgrammerType extends AbstractType
                     6 => 'Girl (purple)',
                 ]
             ])
+            ->add('tagLine', 'textarea')
         ;
     }
 

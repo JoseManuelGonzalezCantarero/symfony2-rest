@@ -72,17 +72,17 @@ class ProgrammerControllerTest extends ApiTestCase
 
     public function testPUTProgrammer()
     {
-        $this->createProgrammer(array(
+        $this->createProgrammer([
             'nickname' => 'CowboyCoder',
             'avatarNumber' => 5,
             'tagLine' => 'foo',
-        ));
+        ]);
 
-        $data = array(
+        $data = [
             'nickname' => 'CowgirlCoder',
             'avatarNumber' => 2,
             'tagLine' => 'foo',
-        );
+        ];
         $response = $this->client->put('/api/programmers/CowboyCoder', [
             'body' => json_encode($data)
         ]);
@@ -90,12 +90,33 @@ class ProgrammerControllerTest extends ApiTestCase
         $this->asserter()->assertResponsePropertyEquals($response, 'avatarNumber', 2);
     }
 
+    public function testPATCHProgrammer()
+    {
+        $this->createProgrammer([
+            'nickname' => 'CowboyCoder',
+            'avatarNumber' => 5,
+            'tagLine' => 'foo',
+        ]);
+
+        $data = [
+            'tagLine' => 'bar'
+        ];
+
+        $response = $this->client->patch('/api/programmers/CowboyCoder', [
+            'body' => json_encode($data)
+        ]);
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->asserter()->assertResponsePropertyEquals($response, 'avatarNumber', 5);
+        $this->asserter()->assertResponsePropertyEquals($response, 'tagLine', 'bar');
+    }
+
     public function testDELETEProgrammer()
     {
-        $this->createProgrammer(array(
+        $this->createProgrammer([
             'nickname' => 'UnitTester',
             'avatarNumber' => 3,
-        ));
+        ]);
 
         $response = $this->client->delete('/api/programmers/UnitTester');
         $this->assertEquals(204, $response->getStatusCode());

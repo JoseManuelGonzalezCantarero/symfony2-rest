@@ -90,13 +90,14 @@ class ProgrammerController extends BaseController
 
     /**
      * @Route("/api/programmers/{nickname}")
-     * @Method("PUT")
+     * @Method({"PUT", "PATCH"})
      */
     public function updateAction($nickname, Request $request)
     {
         $programmer = $this->getDoctrine()
             ->getRepository('AppBundle:Programmer')
             ->findOneByNickname($nickname);
+
         if (!$programmer) {
             throw $this->createNotFoundException(sprintf(
                 'No programmer found with nickname "%s"',
@@ -106,9 +107,11 @@ class ProgrammerController extends BaseController
 
         $form = $this->createForm(new UpdateProgrammerType(), $programmer);
         $this->processForm($request, $form);
+
         $em = $this->getDoctrine()->getManager();
         $em->persist($programmer);
         $em->flush();
+
         $data = $this->serializeProgrammer($programmer);
         $response = new JsonResponse($data, 200);
         return $response;
@@ -149,6 +152,8 @@ class ProgrammerController extends BaseController
     private function processForm(Request $request, FormInterface $form)
     {
         $data = json_decode($request->getContent(), true);
-        $form->submit($data);
+
+        $clearMissing = $request->getMethod() != 'PATCH';
+        $form->submit($data, $clearMissing);
     }
 }
