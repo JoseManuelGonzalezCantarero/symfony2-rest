@@ -7,6 +7,7 @@ use AppBundle\Entity\Programmer;
 use AppBundle\Form\ProgrammerType;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -18,11 +19,9 @@ class ProgrammerController extends BaseController
      */
     public function newAction(Request $request)
     {
-        $data = json_decode($request->getContent(), true);
-
         $programmer = new Programmer();
         $form = $this->createForm(new ProgrammerType(), $programmer);
-        $form->submit($data);
+        $this->processForm($request, $form);
 
         $programmer->setUser($this->findUserByUsername('weaverryan'));
 
@@ -87,6 +86,32 @@ class ProgrammerController extends BaseController
         return $response;
     }
 
+    /**
+     * @Route("/api/programmers/{nickname}")
+     * @Method("PUT")
+     */
+    public function updateAction($nickname, Request $request)
+    {
+        $programmer = $this->getDoctrine()
+            ->getRepository('AppBundle:Programmer')
+            ->findOneByNickname($nickname);
+        if (!$programmer) {
+            throw $this->createNotFoundException(sprintf(
+                'No programmer found with nickname "%s"',
+                $nickname
+            ));
+        }
+
+        $form = $this->createForm(new ProgrammerType(), $programmer);
+        $this->processForm($request, $form);
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($programmer);
+        $em->flush();
+        $data = $this->serializeProgrammer($programmer);
+        $response = new JsonResponse($data, 200);
+        return $response;
+    }
+
     private function serializeProgrammer(Programmer $programmer)
     {
         return [
@@ -95,5 +120,11 @@ class ProgrammerController extends BaseController
             'powerLevel' => $programmer->getPowerLevel(),
             'tagLine' => $programmer->getTagLine(),
         ];
+    }
+
+    private function processForm(Request $request, FormInterface $form)
+    {
+        $data = json_decode($request->getContent(), true);
+        $form->submit($data);
     }
 }
