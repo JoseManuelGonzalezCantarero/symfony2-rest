@@ -8,6 +8,7 @@ use Doctrine\Common\DataFixtures\Purger\ORMPurger;
 use Doctrine\ORM\EntityManager;
 use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Event\BeforeEvent;
 use GuzzleHttp\Message\AbstractMessage;
 use GuzzleHttp\Message\ResponseInterface;
 use GuzzleHttp\Subscriber\History;
@@ -45,8 +46,9 @@ class ApiTestCase extends KernelTestCase
 
     public static function setUpBeforeClass()
     {
+        $baseUrl = getenv('TEST_BASE_URL');
         self::$staticClient = new Client([
-            'base_url' => 'http://localhost:8000',
+            'base_url' => $baseUrl,
             'defaults' => [
                 'exceptions' => false
             ]
@@ -56,6 +58,15 @@ class ApiTestCase extends KernelTestCase
             ->attach(self::$history);
 
         self::bootKernel();
+
+        // guaranteeing that /app_test.php is prefixed to all URLs
+        self::$staticClient->getEmitter()
+            ->on('before', function(BeforeEvent $event) {
+                $path = $event->getRequest()->getPath();
+                if (strpos($path, '/api') === 0) {
+                    $event->getRequest()->setPath('/app_test.php'.$path);
+                }
+            });
     }
 
     protected function setUp()
