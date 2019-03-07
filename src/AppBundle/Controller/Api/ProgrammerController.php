@@ -11,6 +11,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class ProgrammerController extends BaseController
 {
@@ -111,6 +112,28 @@ class ProgrammerController extends BaseController
         $data = $this->serializeProgrammer($programmer);
         $response = new JsonResponse($data, 200);
         return $response;
+    }
+
+    /**
+     * @Route("/api/programmers/{nickname}")
+     * @Method("DELETE")
+     */
+    public function deleteAction($nickname)
+    {
+        $programmer = $this->getDoctrine()
+            ->getRepository('AppBundle:Programmer')
+            ->findOneByNickname($nickname);
+
+        if ($programmer) {
+            // debated point: should we 404 on an unknown nickname?
+            // or should we just return a nice 204 in all cases?
+            // we're doing the latter
+            $em = $this->getDoctrine()->getManager();
+            $em->remove($programmer);
+            $em->flush();
+        }
+
+        return new Response(null, 204);
     }
 
     private function serializeProgrammer(Programmer $programmer)
