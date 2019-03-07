@@ -5,6 +5,7 @@ namespace AppBundle\Controller\Api;
 use AppBundle\Controller\BaseController;
 use AppBundle\Entity\Programmer;
 use AppBundle\Form\ProgrammerType;
+use AppBundle\Form\UpdateProgrammerType;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\Form\FormInterface;
@@ -102,7 +103,7 @@ class ProgrammerController extends BaseController
             ));
         }
 
-        $form = $this->createForm(new ProgrammerType(), $programmer);
+        $form = $this->createForm(new UpdateProgrammerType(), $programmer);
         $this->processForm($request, $form);
         $em = $this->getDoctrine()->getManager();
         $em->persist($programmer);

@@ -79,7 +79,7 @@ class ProgrammerControllerTest extends ApiTestCase
         ));
 
         $data = array(
-            'nickname' => 'CowboyCoder',
+            'nickname' => 'CowgirlCoder',
             'avatarNumber' => 2,
             'tagLine' => 'foo',
         );
