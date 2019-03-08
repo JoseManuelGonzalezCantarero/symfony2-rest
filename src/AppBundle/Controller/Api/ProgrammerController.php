@@ -9,6 +9,7 @@ use AppBundle\Form\UpdateProgrammerType;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -23,6 +24,18 @@ class ProgrammerController extends BaseController
         $programmer = new Programmer();
         $form = $this->createForm(new ProgrammerType(), $programmer);
         $this->processForm($request, $form);
+
+        if (!$form->isValid()) {
+            $errors = $this->getErrorsFromForm($form);
+
+            $data = [
+                'type' => 'validation_error',
+                'title' => 'There was a validation error',
+                'errors' => $errors,
+            ];
+
+            return new JsonResponse($data, 400);
+        }
 
         $programmer->setUser($this->findUserByUsername('weaverryan'));
 
@@ -134,5 +147,23 @@ class ProgrammerController extends BaseController
 
         $clearMissing = $request->getMethod() != 'PATCH';
         $form->submit($data, $clearMissing);
+    }
+
+    private function getErrorsFromForm(FormInterface $form)
+    {
+        $errors = [];
+        foreach ($form->getErrors() as $error) {
+            $errors[] = $error->getMessage();
+        }
+
+        foreach ($form->all() as $childForm) {
+            if ($childForm instanceof FormInterface) {
+                if ($childErrors = $this->getErrorsFromForm($childForm)) {
+                    $errors[$childForm->getName()] = $childErrors;
+                }
+            }
+        }
+
+        return $errors;
     }
 }
