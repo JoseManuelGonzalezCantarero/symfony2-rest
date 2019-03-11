@@ -3,6 +3,7 @@
 namespace AppBundle\Controller\Api;
 
 use AppBundle\Api\ApiProblem;
+use AppBundle\Api\ApiProblemException;
 use AppBundle\Controller\BaseController;
 use AppBundle\Entity\Programmer;
 use AppBundle\Form\ProgrammerType;
@@ -144,6 +145,8 @@ class ProgrammerController extends BaseController
         $data = json_decode($request->getContent(), true);
         if ($data === null) {
             $apiProblem = new ApiProblem(400, ApiProblem::TYPE_INVALID_REQUEST_BODY_FORMAT);
+
+            throw new ApiProblemException($apiProblem);
         }
 
         $clearMissing = $request->getMethod() != 'PATCH';
