@@ -11,10 +11,8 @@ use AppBundle\Form\UpdateProgrammerType;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\Form\FormInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ProgrammerController extends BaseController
 {
@@ -29,7 +27,7 @@ class ProgrammerController extends BaseController
         $this->processForm($request, $form);
 
         if (!$form->isValid()) {
-            return $this->createValidationErrorResponse($form);
+            $this->throwApiProblemValidationException($form);
         }
 
         $programmer->setUser($this->findUserByUsername('weaverryan'));
@@ -106,7 +104,7 @@ class ProgrammerController extends BaseController
         $this->processForm($request, $form);
 
         if (!$form->isValid()) {
-            return $this->createValidationErrorResponse($form);
+            $this->throwApiProblemValidationException($form);
         }
 
         $em = $this->getDoctrine()->getManager();
@@ -171,7 +169,7 @@ class ProgrammerController extends BaseController
         return $errors;
     }
 
-    private function createValidationErrorResponse(FormInterface $form)
+    private function throwApiProblemValidationException(FormInterface $form)
     {
         $errors = $this->getErrorsFromForm($form);
 
@@ -181,9 +179,6 @@ class ProgrammerController extends BaseController
         );
         $apiProblem->set('errors', $errors);
 
-        $response = new JsonResponse($apiProblem->toArray(), $apiProblem->getStatusCode());
-        $response->headers->set('Content-Type', 'application/problem+json');
-
-        return $response;
+        throw new ApiProblemException($apiProblem);
     }
 }
