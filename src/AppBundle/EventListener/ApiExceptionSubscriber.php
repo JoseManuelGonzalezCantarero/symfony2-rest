@@ -22,9 +22,11 @@ class ApiExceptionSubscriber implements EventSubscriberInterface
             $apiProblem = new ApiProblem(
                 $statusCode
             );
+
+            if ($e instanceof HttpExceptionInterface) {
+                $apiProblem->set('detail', $e->getMessage());
+            }
         }
-
-
 
         $response = new JsonResponse(
             $apiProblem->toArray(),
