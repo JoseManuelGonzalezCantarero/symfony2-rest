@@ -161,7 +161,7 @@ EOF;
         ]);
 
         $this->assertEquals(400, $response->getStatusCode());
-        $this->asserter()->assertResponsePropertyEquals($response, 'type', 'invalid_body_format');
+        $this->asserter()->assertResponsePropertyContains($response, 'type', 'invalid_body_format');
     }
 
     public function test404Exception()
